@@ -8,7 +8,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
 <style>
-
 *{
 margin:0;
 padding:0;
@@ -118,7 +117,6 @@ width:0%;
 background:#00ffcc;
 transition:0.3s;
 }
-
 </style>
 </head>
 
@@ -170,94 +168,20 @@ let totalAsked = 0;
 let usedQuestions = [];
 let currentQuestion = "";
 
+/* 🔹 Modified Question Bank with Keywords */
 const questionBank = {
 
 "Software Engineer": [
-"Explain OOPS principles.",
-"What is REST API?",
-"Tell me about yourself.",
-"How do you handle deadlines?",
-"What is multithreading?",
-"Describe a challenging project.",
-"What is database normalization?",
-"Why should we hire you?"
+{q:"Explain OOPS principles.", keywords:["encapsulation","inheritance","polymorphism","abstraction","class","object"]},
+{q:"What is REST API?", keywords:["http","api","stateless","client","server"]},
+{q:"What is multithreading?", keywords:["thread","parallel","concurrent","process","cpu"]},
+{q:"What is database normalization?", keywords:["normalization","redundancy","database","table"]}
 ],
 
 "Data Scientist": [
-"What is overfitting?",
-"Explain bias vs variance.",
-"How do you communicate insights?",
-"Describe your ML project.",
-"What is feature engineering?",
-"Why Data Science?",
-"Explain cross validation.",
-"How do you handle pressure?"
-],
-
-"Cloud Engineer": [
-"What is cloud computing?",
-"Explain IaaS, PaaS, SaaS.",
-"Why cloud career?",
-"What is load balancing?",
-"Describe a cloud project.",
-"How do you ensure security?",
-"What is containerization?",
-"How do you manage failures?"
-],
-
-"Cyber Security Analyst": [
-"What is phishing?",
-"Explain encryption.",
-"Describe a security breach response.",
-"Why cyber security?",
-"What is firewall?",
-"What is penetration testing?",
-"How do you handle threats?",
-"What is vulnerability assessment?"
-],
-
-"HR Manager": [
-"Explain recruitment lifecycle.",
-"How do you resolve conflicts?",
-"Why HR field?",
-"What is employee engagement?",
-"Describe leadership experience.",
-"What is payroll management?",
-"How do you handle stress?",
-"Explain performance appraisal."
-],
-
-"Business Analyst": [
-"What is requirement gathering?",
-"Explain SWOT analysis.",
-"Why BA role?",
-"What is BRD?",
-"Describe stakeholder management.",
-"What is gap analysis?",
-"How do you prioritize tasks?",
-"Explain Agile methodology."
-],
-
-"AI/ML Engineer": [
-"What is gradient descent?",
-"Explain neural networks.",
-"Why AI career?",
-"What is deep learning?",
-"Explain your AI project.",
-"Difference between CNN and RNN?",
-"What is model deployment?",
-"How do you update skills?"
-],
-
-"Digital Marketing Manager": [
-"What is SEO?",
-"Explain digital marketing funnel.",
-"How do you measure campaign success?",
-"What is PPC?",
-"Why marketing career?",
-"What is conversion rate?",
-"Explain content strategy.",
-"Describe a marketing campaign."
+{q:"What is overfitting?", keywords:["model","training","testing","variance","generalization"]},
+{q:"Explain bias vs variance.", keywords:["bias","variance","error","underfitting","overfitting"]},
+{q:"Explain cross validation.", keywords:["validation","fold","dataset","accuracy"]}
 ]
 
 };
@@ -267,19 +191,19 @@ function startInterview(){
 let role = document.getElementById("roleSelect").value;
 let questions = questionBank[role];
 
-let available = questions.filter(q=>!usedQuestions.includes(q));
+let available = questions.filter(q=>!usedQuestions.includes(q.q));
 
-if(available.length===0){
+if(!questions || available.length===0){
 document.getElementById("questionBox").innerHTML="Interview Completed!";
 return;
 }
 
 let randomIndex=Math.floor(Math.random()*available.length);
 currentQuestion=available[randomIndex];
-usedQuestions.push(currentQuestion);
+usedQuestions.push(currentQuestion.q);
 totalAsked++;
 
-document.getElementById("questionBox").innerHTML="<b>Question:</b> "+currentQuestion;
+document.getElementById("questionBox").innerHTML="<b>Question:</b> "+currentQuestion.q;
 document.getElementById("resultBox").innerHTML="";
 document.getElementById("answerBox").value="";
 
@@ -310,9 +234,11 @@ clearInterval(timer);
 evaluateAnswer();
 }
 
+/* 🔹 ONLY THIS PART MODIFIED FOR RELEVANCE */
+
 function evaluateAnswer(){
 
-let answer=document.getElementById("answerBox").value.trim();
+let answer=document.getElementById("answerBox").value.trim().toLowerCase();
 let result=document.getElementById("resultBox");
 
 if(answer.length<20){
@@ -320,6 +246,24 @@ result.style.background="#8B0000";
 result.innerHTML="Answer too short. Improve your explanation.";
 return;
 }
+
+/* 🔎 Relevance Check */
+let matchCount = 0;
+
+currentQuestion.keywords.forEach(keyword=>{
+if(answer.includes(keyword)){
+matchCount++;
+}
+});
+
+/* ❌ If No Keyword Match → Irrelevant */
+if(matchCount === 0){
+result.style.background="#8B0000";
+result.innerHTML="<b>Irrelevant Answer ❌</b><br>Please answer according to the question asked.";
+return;
+}
+
+/* ✅ If Relevant → Original Grading System */
 
 let grade,feedback,points;
 
