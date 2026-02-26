@@ -3,279 +3,357 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Interview Simulator | Industry Edition</title>
+<title>AI Interview Simulator | Pro Edition</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
 <style>
-body {
-    margin: 0;
-    font-family: 'Segoe UI', sans-serif;
-    background: linear-gradient(135deg,#141e30,#243b55);
-    color: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Poppins',sans-serif;
 }
 
-.container {
-    width: 90%;
-    max-width: 900px;
-    background: rgba(0,0,0,0.8);
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 0 25px rgba(0,255,255,0.4);
+body{
+background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+color:white;
 }
 
-h1 { text-align:center; }
-
-select, textarea, button {
-    width:100%;
-    padding:12px;
-    margin-top:15px;
-    border-radius:8px;
-    border:none;
-    font-size:16px;
+.container{
+width:95%;
+max-width:950px;
+background:rgba(0,0,0,0.85);
+padding:35px;
+border-radius:18px;
+box-shadow:0 0 40px rgba(0,255,255,0.3);
 }
 
-button {
-    background:#00c6ff;
-    font-weight:bold;
-    cursor:pointer;
+h1{
+text-align:center;
+margin-bottom:20px;
+font-weight:600;
 }
 
-button:hover { background:#00ffcc; }
-
-.question-box { margin-top:20px; font-size:18px; }
-
-.result {
-    margin-top:20px;
-    padding:15px;
-    border-radius:8px;
+.top-section{
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:20px;
 }
 
-.timer {
-    font-size:18px;
-    margin-top:10px;
-    color:#00ffcc;
+select{
+padding:10px;
+border-radius:8px;
+border:none;
+font-size:15px;
 }
+
+.timer{
+font-size:18px;
+font-weight:600;
+color:#00ffcc;
+}
+
+.question-box{
+margin-top:25px;
+font-size:18px;
+min-height:60px;
+}
+
+textarea{
+width:100%;
+margin-top:20px;
+padding:15px;
+border-radius:10px;
+border:none;
+font-size:15px;
+resize:none;
+}
+
+button{
+margin-top:20px;
+padding:12px;
+width:100%;
+border:none;
+border-radius:8px;
+background:#00c6ff;
+font-weight:600;
+cursor:pointer;
+transition:0.3s;
+}
+
+button:hover{
+background:#00ffcc;
+}
+
+.result{
+margin-top:20px;
+padding:15px;
+border-radius:8px;
+font-size:15px;
+}
+
+.score-board{
+margin-top:15px;
+font-weight:600;
+}
+
+.progress-bar{
+height:8px;
+background:#333;
+border-radius:10px;
+margin-top:8px;
+overflow:hidden;
+}
+
+.progress{
+height:100%;
+width:0%;
+background:#00ffcc;
+transition:0.3s;
+}
+
 </style>
 </head>
 
 <body>
 
 <div class="container">
+
 <h1>AI Interview Simulator</h1>
 
-<label>Select Role:</label>
+<div class="top-section">
 <select id="roleSelect">
-<option value="Software Developer">Software Developer</option>
+<option value="Software Engineer">Software Engineer</option>
 <option value="Data Scientist">Data Scientist</option>
 <option value="Cloud Engineer">Cloud Engineer</option>
+<option value="Cyber Security Analyst">Cyber Security Analyst</option>
 <option value="HR Manager">HR Manager</option>
-<option value="AI Engineer">AI Engineer</option>
 <option value="Business Analyst">Business Analyst</option>
+<option value="AI/ML Engineer">AI/ML Engineer</option>
+<option value="Digital Marketing Manager">Digital Marketing Manager</option>
 </select>
+
+<div class="timer" id="timer">Time: 00</div>
+</div>
 
 <button onclick="startInterview()">Start Interview</button>
 
-<div class="timer" id="timer"></div>
 <div class="question-box" id="questionBox"></div>
 
-<textarea id="answerBox" rows="5" placeholder="Write your professional answer here..."></textarea>
+<textarea id="answerBox" rows="5" placeholder="Type your professional answer here..."></textarea>
 
 <button onclick="submitAnswer()">Submit Answer</button>
 
 <div class="result" id="resultBox"></div>
 
+<div class="score-board" id="scoreBoard"></div>
+
+<div class="progress-bar">
+<div class="progress" id="progress"></div>
+</div>
+
 </div>
 
 <script>
 
-let timerInterval;
-let timeLeft = 60;
-let currentQuestion = "";
+let timer;
+let timeLeft = 45;
+let score = 0;
+let totalAsked = 0;
 let usedQuestions = [];
+let currentQuestion = "";
 
 const questionBank = {
 
-"Software Developer": {
-technical: [
+"Software Engineer": [
 "Explain OOPS principles.",
 "What is REST API?",
-"Difference between SQL and NoSQL?",
-"What is multithreading?"
-],
-hr: [
 "Tell me about yourself.",
-"Why should we hire you?",
-"Describe a challenging project you worked on.",
-"How do you handle deadlines?"
-]
-},
+"How do you handle deadlines?",
+"What is multithreading?",
+"Describe a challenging project.",
+"What is database normalization?",
+"Why should we hire you?"
+],
 
-"Data Scientist": {
-technical: [
+"Data Scientist": [
 "What is overfitting?",
 "Explain bias vs variance.",
-"What is cross validation?",
-"What is feature engineering?"
-],
-hr: [
 "How do you communicate insights?",
-"Describe a real project you handled.",
-"How do you handle pressure?",
-"Why Data Science?"
-]
-},
+"Describe your ML project.",
+"What is feature engineering?",
+"Why Data Science?",
+"Explain cross validation.",
+"How do you handle pressure?"
+],
 
-"Cloud Engineer": {
-technical: [
+"Cloud Engineer": [
 "What is cloud computing?",
 "Explain IaaS, PaaS, SaaS.",
-"What is load balancing?",
-"What is containerization?"
-],
-hr: [
 "Why cloud career?",
+"What is load balancing?",
 "Describe a cloud project.",
 "How do you ensure security?",
+"What is containerization?",
 "How do you manage failures?"
-]
-},
+],
 
-"HR Manager": {
-technical: [
+"Cyber Security Analyst": [
+"What is phishing?",
+"Explain encryption.",
+"Describe a security breach response.",
+"Why cyber security?",
+"What is firewall?",
+"What is penetration testing?",
+"How do you handle threats?",
+"What is vulnerability assessment?"
+],
+
+"HR Manager": [
 "Explain recruitment lifecycle.",
-"What is payroll management?",
-"What is performance appraisal?",
-"What is employee engagement?"
-],
-hr: [
 "How do you resolve conflicts?",
-"Describe leadership experience.",
 "Why HR field?",
-"How do you handle stress?"
-]
-},
-
-"AI Engineer": {
-technical: [
-"What is gradient descent?",
-"Explain neural networks.",
-"What is deep learning?",
-"Difference between CNN and RNN?"
+"What is employee engagement?",
+"Describe leadership experience.",
+"What is payroll management?",
+"How do you handle stress?",
+"Explain performance appraisal."
 ],
-hr: [
-"Why AI career?",
-"Explain your AI project.",
-"How do you update skills?",
-"What motivates you?"
-]
-},
 
-"Business Analyst": {
-technical: [
+"Business Analyst": [
 "What is requirement gathering?",
 "Explain SWOT analysis.",
-"What is BRD?",
-"What is gap analysis?"
-],
-hr: [
-"How do you handle stakeholders?",
 "Why BA role?",
-"Describe a project challenge.",
-"How do you prioritize work?"
+"What is BRD?",
+"Describe stakeholder management.",
+"What is gap analysis?",
+"How do you prioritize tasks?",
+"Explain Agile methodology."
+],
+
+"AI/ML Engineer": [
+"What is gradient descent?",
+"Explain neural networks.",
+"Why AI career?",
+"What is deep learning?",
+"Explain your AI project.",
+"Difference between CNN and RNN?",
+"What is model deployment?",
+"How do you update skills?"
+],
+
+"Digital Marketing Manager": [
+"What is SEO?",
+"Explain digital marketing funnel.",
+"How do you measure campaign success?",
+"What is PPC?",
+"Why marketing career?",
+"What is conversion rate?",
+"Explain content strategy.",
+"Describe a marketing campaign."
 ]
-}
 
 };
 
-function startInterview() {
+function startInterview(){
 
 let role = document.getElementById("roleSelect").value;
-let roleData = questionBank[role];
+let questions = questionBank[role];
 
-let allQuestions = [...roleData.technical, ...roleData.hr];
-let available = allQuestions.filter(q => !usedQuestions.includes(q));
+let available = questions.filter(q=>!usedQuestions.includes(q));
 
-if (available.length === 0) {
-document.getElementById("questionBox").innerHTML =
-"Interview Completed for this role.";
+if(available.length===0){
+document.getElementById("questionBox").innerHTML="Interview Completed!";
 return;
 }
 
-let randomIndex = Math.floor(Math.random()*available.length);
-currentQuestion = available[randomIndex];
+let randomIndex=Math.floor(Math.random()*available.length);
+currentQuestion=available[randomIndex];
 usedQuestions.push(currentQuestion);
+totalAsked++;
 
-document.getElementById("questionBox").innerHTML =
-"<strong>Question:</strong> " + currentQuestion;
-
-document.getElementById("resultBox").innerHTML = "";
-document.getElementById("answerBox").value = "";
+document.getElementById("questionBox").innerHTML="<b>Question:</b> "+currentQuestion;
+document.getElementById("resultBox").innerHTML="";
+document.getElementById("answerBox").value="";
 
 startTimer();
 }
 
-function startTimer() {
-clearInterval(timerInterval);
-timeLeft = 60;
-document.getElementById("timer").innerHTML =
-"Time Remaining: " + timeLeft + " sec";
+function startTimer(){
+clearInterval(timer);
+timeLeft=45;
+updateTimer();
 
-timerInterval = setInterval(function() {
+timer=setInterval(()=>{
 timeLeft--;
-document.getElementById("timer").innerHTML =
-"Time Remaining: " + timeLeft + " sec";
-
-if (timeLeft <= 0) {
-clearInterval(timerInterval);
-autoSubmit();
+updateTimer();
+if(timeLeft<=0){
+clearInterval(timer);
+evaluateAnswer();
 }
 },1000);
 }
 
-function submitAnswer() {
-clearInterval(timerInterval);
-evaluateAnswer();
-document.getElementById("timer").innerHTML = "";
+function updateTimer(){
+document.getElementById("timer").innerHTML="Time: "+timeLeft+"s";
 }
 
-function autoSubmit() {
+function submitAnswer(){
+clearInterval(timer);
 evaluateAnswer();
-document.getElementById("timer").innerHTML = "";
 }
 
-function evaluateAnswer() {
+function evaluateAnswer(){
 
-let answer = document.getElementById("answerBox").value.trim();
-let resultBox = document.getElementById("resultBox");
+let answer=document.getElementById("answerBox").value.trim();
+let result=document.getElementById("resultBox");
 
-if (answer.length < 15) {
-resultBox.style.background="#8B0000";
-resultBox.innerHTML="Answer too short. Needs improvement.";
+if(answer.length<20){
+result.style.background="#8B0000";
+result.innerHTML="Answer too short. Improve your explanation.";
 return;
 }
 
-let grade, feedback;
+let grade,feedback,points;
 
-if (answer.length > 150) {
+if(answer.length>180){
+grade="A+";
+feedback="Outstanding detailed professional answer.";
+points=10;
+}
+else if(answer.length>120){
 grade="A";
-feedback="Excellent professional and detailed response.";
+feedback="Strong answer with clarity and depth.";
+points=8;
 }
-else if (answer.length > 80) {
+else if(answer.length>70){
 grade="B";
-feedback="Good structured answer with clarity.";
+feedback="Good answer but add more technical depth.";
+points=6;
 }
-else {
+else{
 grade="C";
-feedback="Average answer. Add more technical depth.";
+feedback="Basic response. Needs improvement.";
+points=4;
 }
 
-resultBox.style.background="#004d40";
-resultBox.innerHTML=
-"<strong>Evaluation:</strong> "+feedback+
-"<br><strong>Grade:</strong> "+grade;
+score+=points;
+
+result.style.background="#004d40";
+result.innerHTML="<b>Grade:</b> "+grade+"<br><b>Feedback:</b> "+feedback;
+
+document.getElementById("scoreBoard").innerHTML=
+"Score: "+score+" | Questions Attempted: "+totalAsked;
+
+document.getElementById("progress").style.width=
+(totalAsked*12)+"%";
 }
 
 </script>
