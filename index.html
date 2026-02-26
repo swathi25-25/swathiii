@@ -1,199 +1,115 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Interview Simulator | Pro Edition</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-
-<style>
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:'Poppins',sans-serif;
-}
-
-body{
-background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-display:flex;
-justify-content:center;
-align-items:center;
-height:100vh;
-color:white;
-}
-
-.container{
-width:95%;
-max-width:950px;
-background:rgba(0,0,0,0.85);
-padding:35px;
-border-radius:18px;
-box-shadow:0 0 40px rgba(0,255,255,0.3);
-}
-
-h1{
-text-align:center;
-margin-bottom:20px;
-font-weight:600;
-}
-
-.top-section{
-display:flex;
-justify-content:space-between;
-align-items:center;
-gap:20px;
-}
-
-select{
-padding:10px;
-border-radius:8px;
-border:none;
-font-size:15px;
-}
-
-.timer{
-font-size:18px;
-font-weight:600;
-color:#00ffcc;
-}
-
-.question-box{
-margin-top:25px;
-font-size:18px;
-min-height:60px;
-}
-
-textarea{
-width:100%;
-margin-top:20px;
-padding:15px;
-border-radius:10px;
-border:none;
-font-size:15px;
-resize:none;
-}
-
-button{
-margin-top:20px;
-padding:12px;
-width:100%;
-border:none;
-border-radius:8px;
-background:#00c6ff;
-font-weight:600;
-cursor:pointer;
-transition:0.3s;
-}
-
-button:hover{
-background:#00ffcc;
-}
-
-.result{
-margin-top:20px;
-padding:15px;
-border-radius:8px;
-font-size:15px;
-}
-
-.score-board{
-margin-top:15px;
-font-weight:600;
-}
-
-.progress-bar{
-height:8px;
-background:#333;
-border-radius:10px;
-margin-top:8px;
-overflow:hidden;
-}
-
-.progress{
-height:100%;
-width:0%;
-background:#00ffcc;
-transition:0.3s;
-}
-</style>
-</head>
-
-<body>
-
-<div class="container">
-
-<h1>AI Interview Simulator</h1>
-
-<div class="top-section">
-<select id="roleSelect">
-<option value="Software Engineer">Software Engineer</option>
-<option value="Data Scientist">Data Scientist</option>
-<option value="Cloud Engineer">Cloud Engineer</option>
-<option value="Cyber Security Analyst">Cyber Security Analyst</option>
-<option value="HR Manager">HR Manager</option>
-<option value="Business Analyst">Business Analyst</option>
-<option value="AI/ML Engineer">AI/ML Engineer</option>
-<option value="Digital Marketing Manager">Digital Marketing Manager</option>
-</select>
-
-<div class="timer" id="timer">Time: 00</div>
-</div>
-
-<button onclick="startInterview()">Start Interview</button>
-
-<div class="question-box" id="questionBox"></div>
-
-<textarea id="answerBox" rows="5" placeholder="Type your professional answer here..."></textarea>
-
-<button onclick="submitAnswer()">Submit Answer</button>
-
-<div class="result" id="resultBox"></div>
-
-<div class="score-board" id="scoreBoard"></div>
-
-<div class="progress-bar">
-<div class="progress" id="progress"></div>
-</div>
-
-</div>
-
 <script>
-
 let timer;
 let timeLeft = 45;
 let score = 0;
 let totalAsked = 0;
 let usedQuestions = [];
 let currentQuestion = "";
+let disqualified = false;
 
-/* 🔹 Modified Question Bank with Keywords */
+/* 🔎 Keywords added for relevance checking */
 const questionBank = {
-
 "Software Engineer": [
 {q:"Explain OOPS principles.", keywords:["encapsulation","inheritance","polymorphism","abstraction","class","object"]},
-{q:"What is REST API?", keywords:["http","api","stateless","client","server"]},
-{q:"What is multithreading?", keywords:["thread","parallel","concurrent","process","cpu"]},
-{q:"What is database normalization?", keywords:["normalization","redundancy","database","table"]}
+{q:"What is REST API?", keywords:["api","http","client","server","stateless","request","response"]},
+{q:"Tell me about yourself.", keywords:["experience","skills","education","background"]},
+{q:"How do you handle deadlines?", keywords:["time","management","priority","planning"]},
+{q:"What is multithreading?", keywords:["thread","parallel","concurrent","process"]},
+{q:"Describe a challenging project.", keywords:["project","challenge","solution"]},
+{q:"What is database normalization?", keywords:["normalization","database","redundancy","table"]},
+{q:"Why should we hire you?", keywords:["skills","experience","contribution","value"]}
 ],
 
 "Data Scientist": [
-{q:"What is overfitting?", keywords:["model","training","testing","variance","generalization"]},
-{q:"Explain bias vs variance.", keywords:["bias","variance","error","underfitting","overfitting"]},
-{q:"Explain cross validation.", keywords:["validation","fold","dataset","accuracy"]}
-]
+{q:"What is overfitting?", keywords:["model","training","test","variance","error"]},
+{q:"Explain bias vs variance.", keywords:["bias","variance","overfitting","underfitting"]},
+{q:"How do you communicate insights?", keywords:["data","visualization","report","stakeholder"]},
+{q:"Describe your ML project.", keywords:["model","data","algorithm","result"]},
+{q:"What is feature engineering?", keywords:["feature","data","selection","transformation"]},
+{q:"Why Data Science?", keywords:["data","analysis","insight"]},
+{q:"Explain cross validation.", keywords:["validation","fold","model","training"]},
+{q:"How do you handle pressure?", keywords:["time","management","priority"]}
+],
 
+"Cloud Engineer": [
+{q:"What is cloud computing?", keywords:["cloud","internet","server","service"]},
+{q:"Explain IaaS, PaaS, SaaS.", keywords:["iaas","paas","saas","service"]},
+{q:"Why cloud career?", keywords:["cloud","technology","growth"]},
+{q:"What is load balancing?", keywords:["traffic","server","distribution"]},
+{q:"Describe a cloud project.", keywords:["cloud","deployment","service"]},
+{q:"How do you ensure security?", keywords:["security","encryption","access"]},
+{q:"What is containerization?", keywords:["container","docker","application"]},
+{q:"How do you manage failures?", keywords:["backup","recovery","monitoring"]}
+],
+
+"Cyber Security Analyst": [
+{q:"What is phishing?", keywords:["email","fraud","attack","user"]},
+{q:"Explain encryption.", keywords:["encryption","data","security","key"]},
+{q:"Describe a security breach response.", keywords:["incident","response","attack"]},
+{q:"Why cyber security?", keywords:["security","protection","data"]},
+{q:"What is firewall?", keywords:["firewall","network","security"]},
+{q:"What is penetration testing?", keywords:["testing","security","vulnerability"]},
+{q:"How do you handle threats?", keywords:["monitoring","risk","analysis"]},
+{q:"What is vulnerability assessment?", keywords:["vulnerability","scan","security"]}
+],
+
+"HR Manager": [
+{q:"Explain recruitment lifecycle.", keywords:["recruitment","hiring","interview"]},
+{q:"How do you resolve conflicts?", keywords:["conflict","communication","resolution"]},
+{q:"Why HR field?", keywords:["hr","people","management"]},
+{q:"What is employee engagement?", keywords:["employee","motivation","engagement"]},
+{q:"Describe leadership experience.", keywords:["leadership","team","management"]},
+{q:"What is payroll management?", keywords:["salary","payroll","compensation"]},
+{q:"How do you handle stress?", keywords:["stress","management","calm"]},
+{q:"Explain performance appraisal.", keywords:["performance","evaluation","review"]}
+],
+
+"Business Analyst": [
+{q:"What is requirement gathering?", keywords:["requirement","stakeholder","analysis"]},
+{q:"Explain SWOT analysis.", keywords:["strength","weakness","opportunity","threat"]},
+{q:"Why BA role?", keywords:["analysis","business","stakeholder"]},
+{q:"What is BRD?", keywords:["document","requirement","business"]},
+{q:"Describe stakeholder management.", keywords:["stakeholder","communication","management"]},
+{q:"What is gap analysis?", keywords:["gap","current","future"]},
+{q:"How do you prioritize tasks?", keywords:["priority","planning","task"]},
+{q:"Explain Agile methodology.", keywords:["agile","sprint","scrum"]}
+],
+
+"AI/ML Engineer": [
+{q:"What is gradient descent?", keywords:["gradient","optimization","loss"]},
+{q:"Explain neural networks.", keywords:["neuron","layer","activation"]},
+{q:"Why AI career?", keywords:["ai","technology","learning"]},
+{q:"What is deep learning?", keywords:["deep","neural","model"]},
+{q:"Explain your AI project.", keywords:["model","data","result"]},
+{q:"Difference between CNN and RNN?", keywords:["cnn","rnn","network"]},
+{q:"What is model deployment?", keywords:["deployment","production","model"]},
+{q:"How do you update skills?", keywords:["learning","technology","course"]}
+],
+
+"Digital Marketing Manager": [
+{q:"What is SEO?", keywords:["seo","search","ranking"]},
+{q:"Explain digital marketing funnel.", keywords:["awareness","conversion","funnel"]},
+{q:"How do you measure campaign success?", keywords:["kpi","analytics","roi"]},
+{q:"What is PPC?", keywords:["ppc","ads","click"]},
+{q:"Why marketing career?", keywords:["marketing","brand","growth"]},
+{q:"What is conversion rate?", keywords:["conversion","percentage","sales"]},
+{q:"Explain content strategy.", keywords:["content","strategy","audience"]},
+{q:"Describe a marketing campaign.", keywords:["campaign","marketing","result"]}
+]
 };
 
 function startInterview(){
 
+if(disqualified){
+alert("You are DISQUALIFIED. Refresh page to restart.");
+return;
+}
+
 let role = document.getElementById("roleSelect").value;
 let questions = questionBank[role];
-
 let available = questions.filter(q=>!usedQuestions.includes(q.q));
 
-if(!questions || available.length===0){
+if(available.length===0){
 document.getElementById("questionBox").innerHTML="Interview Completed!";
 return;
 }
@@ -206,7 +122,6 @@ totalAsked++;
 document.getElementById("questionBox").innerHTML="<b>Question:</b> "+currentQuestion.q;
 document.getElementById("resultBox").innerHTML="";
 document.getElementById("answerBox").value="";
-
 startTimer();
 }
 
@@ -214,7 +129,6 @@ function startTimer(){
 clearInterval(timer);
 timeLeft=45;
 updateTimer();
-
 timer=setInterval(()=>{
 timeLeft--;
 updateTimer();
@@ -234,9 +148,9 @@ clearInterval(timer);
 evaluateAnswer();
 }
 
-/* 🔹 ONLY THIS PART MODIFIED FOR RELEVANCE */
-
 function evaluateAnswer(){
+
+if(disqualified) return;
 
 let answer=document.getElementById("answerBox").value.trim().toLowerCase();
 let result=document.getElementById("resultBox");
@@ -248,23 +162,24 @@ return;
 }
 
 /* 🔎 Relevance Check */
-let matchCount = 0;
-
+let matchCount=0;
 currentQuestion.keywords.forEach(keyword=>{
 if(answer.includes(keyword)){
 matchCount++;
 }
 });
 
-/* ❌ If No Keyword Match → Irrelevant */
-if(matchCount === 0){
+/* ❌ If No Match → DISQUALIFIED */
+if(matchCount===0){
+disqualified=true;
 result.style.background="#8B0000";
-result.innerHTML="<b>Irrelevant Answer ❌</b><br>Please answer according to the question asked.";
+result.innerHTML="<b>DISQUALIFIED ❌</b><br>Your answer is not relevant to the question.";
+document.getElementById("scoreBoard").innerHTML="Status: Disqualified";
+clearInterval(timer);
 return;
 }
 
-/* ✅ If Relevant → Original Grading System */
-
+/* ✅ Original Grading System */
 let grade,feedback,points;
 
 if(answer.length>180){
@@ -299,8 +214,4 @@ document.getElementById("scoreBoard").innerHTML=
 document.getElementById("progress").style.width=
 (totalAsked*12)+"%";
 }
-
 </script>
-
-</body>
-</html>
