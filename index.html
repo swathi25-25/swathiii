@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Interview Simulator | Professional Edition</title>
+<title>AI Interview Simulator | Industry Edition</title>
 
 <style>
 body {
     margin: 0;
     font-family: 'Segoe UI', sans-serif;
-    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    background: linear-gradient(135deg,#141e30,#243b55);
     color: white;
     display: flex;
     justify-content: center;
@@ -18,54 +18,45 @@ body {
 }
 
 .container {
-    width: 85%;
+    width: 90%;
     max-width: 900px;
-    background: rgba(0,0,0,0.7);
+    background: rgba(0,0,0,0.8);
     padding: 30px;
     border-radius: 15px;
     box-shadow: 0 0 25px rgba(0,255,255,0.4);
 }
 
-h1 {
-    text-align: center;
-    margin-bottom: 20px;
-}
+h1 { text-align:center; }
 
 select, textarea, button {
-    width: 100%;
-    padding: 12px;
-    margin-top: 15px;
-    border-radius: 8px;
-    border: none;
-    font-size: 16px;
+    width:100%;
+    padding:12px;
+    margin-top:15px;
+    border-radius:8px;
+    border:none;
+    font-size:16px;
 }
 
 button {
-    background: #00c6ff;
-    color: black;
-    font-weight: bold;
-    cursor: pointer;
+    background:#00c6ff;
+    font-weight:bold;
+    cursor:pointer;
 }
 
-button:hover {
-    background: #00ffcc;
-}
+button:hover { background:#00ffcc; }
 
-.question-box {
-    margin-top: 20px;
-    font-size: 18px;
-    font-weight: 500;
-}
+.question-box { margin-top:20px; font-size:18px; }
 
 .result {
-    margin-top: 20px;
-    padding: 15px;
-    border-radius: 8px;
+    margin-top:20px;
+    padding:15px;
+    border-radius:8px;
 }
 
-.score {
-    font-size: 18px;
-    margin-top: 10px;
+.timer {
+    font-size:18px;
+    margin-top:10px;
+    color:#00ffcc;
 }
 </style>
 </head>
@@ -73,203 +64,218 @@ button:hover {
 <body>
 
 <div class="container">
-
 <h1>AI Interview Simulator</h1>
 
 <label>Select Role:</label>
 <select id="roleSelect">
-    <option value="Data Scientist">Data Scientist</option>
-    <option value="Software Developer">Software Developer</option>
-    <option value="AI/ML Engineer">AI/ML Engineer</option>
-    <option value="HR Manager">HR Manager</option>
-    <option value="Digital Marketing Specialist">Digital Marketing Specialist</option>
-    <option value="Business Analyst">Business Analyst</option>
-    <option value="Cloud Engineer">Cloud Engineer</option>
-    <option value="Cyber Security Analyst">Cyber Security Analyst</option>
-    <option value="DevOps Engineer">DevOps Engineer</option>
-    <option value="Product Manager">Product Manager</option>
+<option value="Software Developer">Software Developer</option>
+<option value="Data Scientist">Data Scientist</option>
+<option value="Cloud Engineer">Cloud Engineer</option>
+<option value="HR Manager">HR Manager</option>
+<option value="AI Engineer">AI Engineer</option>
+<option value="Business Analyst">Business Analyst</option>
 </select>
 
 <button onclick="startInterview()">Start Interview</button>
 
+<div class="timer" id="timer"></div>
 <div class="question-box" id="questionBox"></div>
 
-<textarea id="answerBox" rows="5" placeholder="Type your professional answer here..."></textarea>
+<textarea id="answerBox" rows="5" placeholder="Write your professional answer here..."></textarea>
 
 <button onclick="submitAnswer()">Submit Answer</button>
 
 <div class="result" id="resultBox"></div>
-<div class="score" id="scoreBox"></div>
 
 </div>
 
 <script>
 
+let timerInterval;
+let timeLeft = 60;
 let currentQuestion = "";
 let usedQuestions = [];
-let score = 0;
-let totalQuestions = 0;
 
 const questionBank = {
 
-"Data Scientist": [
-"What is overfitting and how do you prevent it?",
-"Explain bias vs variance.",
-"How do you handle missing data?",
-"What is cross-validation?",
-"Explain regression vs classification.",
-"What is feature engineering?",
-"How do you communicate insights to stakeholders?"
-],
-
-"Software Developer": [
+"Software Developer": {
+technical: [
 "Explain OOPS principles.",
 "What is REST API?",
 "Difference between SQL and NoSQL?",
-"What is multithreading?",
-"Explain MVC architecture.",
-"What is version control and why Git is used?",
-"What is exception handling?"
+"What is multithreading?"
 ],
+hr: [
+"Tell me about yourself.",
+"Why should we hire you?",
+"Describe a challenging project you worked on.",
+"How do you handle deadlines?"
+]
+},
 
-"AI/ML Engineer": [
+"Data Scientist": {
+technical: [
+"What is overfitting?",
+"Explain bias vs variance.",
+"What is cross validation?",
+"What is feature engineering?"
+],
+hr: [
+"How do you communicate insights?",
+"Describe a real project you handled.",
+"How do you handle pressure?",
+"Why Data Science?"
+]
+},
+
+"Cloud Engineer": {
+technical: [
+"What is cloud computing?",
+"Explain IaaS, PaaS, SaaS.",
+"What is load balancing?",
+"What is containerization?"
+],
+hr: [
+"Why cloud career?",
+"Describe a cloud project.",
+"How do you ensure security?",
+"How do you manage failures?"
+]
+},
+
+"HR Manager": {
+technical: [
+"Explain recruitment lifecycle.",
+"What is payroll management?",
+"What is performance appraisal?",
+"What is employee engagement?"
+],
+hr: [
+"How do you resolve conflicts?",
+"Describe leadership experience.",
+"Why HR field?",
+"How do you handle stress?"
+]
+},
+
+"AI Engineer": {
+technical: [
 "What is gradient descent?",
 "Explain neural networks.",
 "What is deep learning?",
-"What is regularization?",
-"Difference between CNN and RNN?",
-"What is hyperparameter tuning?",
-"Explain model deployment process."
+"Difference between CNN and RNN?"
 ],
+hr: [
+"Why AI career?",
+"Explain your AI project.",
+"How do you update skills?",
+"What motivates you?"
+]
+},
 
-"HR Manager": [
-"Explain recruitment lifecycle process.",
-"How do you handle employee conflicts?",
-"What is performance management?",
-"How do you improve employee engagement?",
-"What is onboarding process?",
-"Explain payroll management basics."
-],
-
-"Digital Marketing Specialist": [
-"What is SEO?",
-"Explain digital marketing funnel.",
-"What is conversion rate optimization?",
-"What is PPC advertising?",
-"Explain content marketing strategy.",
-"How do you measure campaign success?"
-],
-
-"Business Analyst": [
+"Business Analyst": {
+technical: [
 "What is requirement gathering?",
 "Explain SWOT analysis.",
 "What is BRD?",
+"What is gap analysis?"
+],
+hr: [
 "How do you handle stakeholders?",
-"What is gap analysis?",
-"Explain Agile methodology."
-],
-
-"Cloud Engineer": [
-"What is cloud computing?",
-"Difference between IaaS, PaaS and SaaS?",
-"What is AWS EC2?",
-"What is containerization?",
-"Explain load balancing.",
-"What is cloud security?"
-],
-
-"Cyber Security Analyst": [
-"What is phishing?",
-"Explain firewall.",
-"What is encryption?",
-"Difference between symmetric and asymmetric encryption?",
-"What is vulnerability assessment?",
-"Explain penetration testing."
-],
-
-"DevOps Engineer": [
-"What is CI/CD?",
-"Explain Docker.",
-"What is Kubernetes?",
-"What is infrastructure as code?",
-"What is Jenkins?",
-"Explain monitoring tools."
-],
-
-"Product Manager": [
-"What is product lifecycle?",
-"How do you prioritize features?",
-"What is MVP?",
-"Explain roadmap planning.",
-"How do you handle customer feedback?",
-"What are KPIs in product management?"
+"Why BA role?",
+"Describe a project challenge.",
+"How do you prioritize work?"
 ]
+}
 
 };
 
 function startInterview() {
 
-    const role = document.getElementById("roleSelect").value;
+let role = document.getElementById("roleSelect").value;
+let roleData = questionBank[role];
 
-    if (usedQuestions.length === questionBank[role].length) {
-        document.getElementById("questionBox").innerHTML =
-        "All questions completed for this role.";
-        return;
-    }
+let allQuestions = [...roleData.technical, ...roleData.hr];
+let available = allQuestions.filter(q => !usedQuestions.includes(q));
 
-    let questions = questionBank[role];
-    let availableQuestions = questions.filter(q => !usedQuestions.includes(q));
+if (available.length === 0) {
+document.getElementById("questionBox").innerHTML =
+"Interview Completed for this role.";
+return;
+}
 
-    let randomIndex = Math.floor(Math.random() * availableQuestions.length);
-    currentQuestion = availableQuestions[randomIndex];
+let randomIndex = Math.floor(Math.random()*available.length);
+currentQuestion = available[randomIndex];
+usedQuestions.push(currentQuestion);
 
-    usedQuestions.push(currentQuestion);
-    totalQuestions++;
+document.getElementById("questionBox").innerHTML =
+"<strong>Question:</strong> " + currentQuestion;
 
-    document.getElementById("questionBox").innerHTML =
-    "<strong>Question:</strong> " + currentQuestion;
+document.getElementById("resultBox").innerHTML = "";
+document.getElementById("answerBox").value = "";
 
-    document.getElementById("resultBox").innerHTML = "";
-    document.getElementById("answerBox").value = "";
+startTimer();
+}
+
+function startTimer() {
+clearInterval(timerInterval);
+timeLeft = 60;
+document.getElementById("timer").innerHTML =
+"Time Remaining: " + timeLeft + " sec";
+
+timerInterval = setInterval(function() {
+timeLeft--;
+document.getElementById("timer").innerHTML =
+"Time Remaining: " + timeLeft + " sec";
+
+if (timeLeft <= 0) {
+clearInterval(timerInterval);
+autoSubmit();
+}
+},1000);
 }
 
 function submitAnswer() {
+clearInterval(timerInterval);
+evaluateAnswer();
+document.getElementById("timer").innerHTML = "";
+}
 
-    let answer = document.getElementById("answerBox").value.trim();
-    let resultBox = document.getElementById("resultBox");
+function autoSubmit() {
+evaluateAnswer();
+document.getElementById("timer").innerHTML = "";
+}
 
-    if (answer.length < 20) {
-        resultBox.style.background = "#8B0000";
-        resultBox.innerHTML = "⚠ Please provide a more detailed professional answer.";
-        return;
-    }
+function evaluateAnswer() {
 
-    let feedback = "";
-    let grade = "";
+let answer = document.getElementById("answerBox").value.trim();
+let resultBox = document.getElementById("resultBox");
 
-    if (answer.length > 150) {
-        feedback = "Excellent detailed response with strong professional depth.";
-        grade = "A";
-        score += 10;
-    }
-    else if (answer.length > 80) {
-        feedback = "Good answer. You demonstrated clear understanding.";
-        grade = "B";
-        score += 7;
-    }
-    else {
-        feedback = "Average response. Try adding more technical depth and examples.";
-        grade = "C";
-        score += 4;
-    }
+if (answer.length < 15) {
+resultBox.style.background="#8B0000";
+resultBox.innerHTML="Answer too short. Needs improvement.";
+return;
+}
 
-    resultBox.style.background = "#004d40";
-    resultBox.innerHTML =
-    "<strong>Evaluation:</strong> " + feedback +
-    "<br><strong>Grade:</strong> " + grade;
+let grade, feedback;
 
-    document.getElementById("scoreBox").innerHTML =
-    "Total Score: " + score + " / " + (totalQuestions * 10);
+if (answer.length > 150) {
+grade="A";
+feedback="Excellent professional and detailed response.";
+}
+else if (answer.length > 80) {
+grade="B";
+feedback="Good structured answer with clarity.";
+}
+else {
+grade="C";
+feedback="Average answer. Add more technical depth.";
+}
+
+resultBox.style.background="#004d40";
+resultBox.innerHTML=
+"<strong>Evaluation:</strong> "+feedback+
+"<br><strong>Grade:</strong> "+grade;
 }
 
 </script>
